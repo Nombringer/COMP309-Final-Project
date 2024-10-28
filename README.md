@@ -59,3 +59,6 @@ COMP 309 Project for VUW
 
 --------
 
+Note that some of the libraries used are BROKEN with the numpy 2.0 release: It is nessesary to downgrade numpy in order to get this to run:
+"conda install numpy=1.26"
+

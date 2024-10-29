@@ -89,14 +89,15 @@ def trainCNN(device):
     test_dataloader = DataLoader(test_dataset, batch_size=64)
 
     loss_fn = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    optimizer = torch.optim.Adam(model.classifier.parameters(), lr=1e-3)
     batch_size = 64
-    epochs = 10
+    epochs = 20
 
     for t in range(epochs):
         print(f"Epoch {t+1}\n-------------------------------")
         train(train_dataloader, model, loss_fn, optimizer, batch_size)
         validate(test_dataloader, model, loss_fn)
+        torch.save(model, MODELS_DIR / f"CNN_64_downscaled_ADAMams_epoch_{t+1}.pth")
     logger.success("Done!")
     #save model
     torch.save(model, MODELS_DIR / "CNN_10_epochs.pth")

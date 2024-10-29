@@ -10,7 +10,7 @@ from cnnproject.config import FIGURES_DIR, PROCESSED_DATA_DIR
 import copy
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
-
+import pickle
 app = typer.Typer()
 
 
@@ -28,6 +28,12 @@ def main(
             logger.info("Something happened for iteration 5.")
     logger.success("Plot generation complete.")
     # -----------------------------------------
+    #Load training dataset object from file
+    with open(PROCESSED_DATA_DIR / 'train_dataset_downscaled.pkl', 'rb') as f:
+        dataset = pickle.load(f)
+    #Visualize augmentations
+    visualize_augmentations(dataset)
+
 
 #Useful utilities adapted from: https://albumentations.ai/docs/examples/pytorch_classification/
 def display_image_grid(images_filepaths, predicted_labels=(), cols=5):
@@ -46,7 +52,7 @@ def display_image_grid(images_filepaths, predicted_labels=(), cols=5):
     plt.show()
 
 
-def visualize_augmentations(dataset, idx=0, samples=10, cols=5):
+def visualize_augmentations(dataset, idx=102, samples=10, cols=5):
     dataset = copy.deepcopy(dataset)
     dataset.transform = A.Compose([t for t in dataset.transform if not isinstance(t, (A.Normalize, ToTensorV2))])
     rows = samples // cols

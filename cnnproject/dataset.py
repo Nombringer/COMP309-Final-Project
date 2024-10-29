@@ -30,6 +30,29 @@ def main(
 ):
     # -----------------------------------------
     logger.info("Processing dataset...")
+    create_test_dataset()
+    logger.success("Done!")
+
+
+def create_test_dataset():
+    image_paths = []
+    for f in os.listdir(PROCESSED_DATA_DIR / 'resized'):
+        image_paths.append(PROCESSED_DATA_DIR / 'resized' / f)
+    # -----------------------------------------
+    val_transform_downscaled = A.Compose(
+        [
+            A.SmallestMaxSize(max_size=160),
+            A.CenterCrop(128, 128),
+            A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)), #Taken from ImageNet
+            ToTensorV2()
+        ]
+    )
+    test_dataset = ImageDataset(image_paths, transform=val_transform_downscaled)
+    with open(PROCESSED_DATA_DIR / 'test_dataset.pkl', 'wb') as f:
+        pickle.dump(test_dataset, f)
+
+def create_datasets():
+    logger.info("Processing dataset...")
     
     image_paths = []
     for f in os.listdir(PROCESSED_DATA_DIR / 'resized'):
@@ -43,7 +66,7 @@ def main(
     
     train_transform = A.Compose(
         [
-            A.Blur(blur_limit=6, p=0.3),
+            A.Blur(blur_limit=3, p=0.3),
             A.CLAHE(p=0.3),
             A.Downscale(p=0.1),
             A.GaussNoise(p=0.5),
@@ -63,27 +86,27 @@ def main(
             ToTensorV2()
         ]
     )
-
+    #Downscaled version, params need to be slightly different to account for lower resolution
     train_transform_downscaled = A.Compose(
         [
             A.SmallestMaxSize(max_size=160),
             A.RandomCrop(128, 128),
-            A.Blur(blur_limit=6, p=0.3),
-            A.CLAHE(p=0.3),
-            A.Downscale(p=0.1),
-            A.GaussNoise(p=0.5),
+            A.Blur(blur_limit=5, p=0.3),
+            A.CLAHE(p=0.3, clip_limit=5),
+            A.Downscale(p=0.1, scale_min=0.4, scale_max=0.8),
+            A.GaussNoise(p=0.5, var_limit=(10.0, 60.0)),
             A.ChannelDropout(p=0.1),
             A.HueSaturationValue(p=0.1),
             A.Sharpen(p=0.2),
-            A.GlassBlur(p=0.1),
+            A.GlassBlur(p=0.1, sigma=0.7),
             A.Spatter(p=0.1),
-            A.RandomShadow(p=0.3),
+            A.RandomShadow(p=0.3, num_shadows_lower=1, num_shadows_upper=3, shadow_dimension=5),
             A.RandomBrightnessContrast(p=0.3),
             A.RandomToneCurve(p=0.3),
             A.HorizontalFlip(p=0.5),
             A.VerticalFlip(p=0.1),
-            A.ShiftScaleRotate(shift_limit=0.1, scale_limit=0.2, rotate_limit=25, p=0.5),
-            A.RGBShift(r_shift_limit=20, g_shift_limit=20, b_shift_limit=20, p=0.5),
+            A.ShiftScaleRotate(shift_limit=0.2, scale_limit=0.3, rotate_limit=30, p=0.5),
+            A.RGBShift(r_shift_limit=25, g_shift_limit=25, b_shift_limit=25, p=0.5),
             A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)), #Taken from ImageNet
             ToTensorV2() 
         ]
@@ -123,6 +146,15 @@ def main(
     plots.visualize_augmentations(train_dataset, idx=10, samples=10, cols=5)
     plots.visualize_augmentations(train_dataset_downscaled, idx=10, samples=10, cols=5)
 
+    logger.success("Done!")
+
+
+#very ugly because I messed up up bit of class structure
+def plotcaller():
+    with open(PROCESSED_DATA_DIR / 'train_dataset_downscaled.pkl', 'rb') as f:
+        dataset = pickle.load(f)
+    #Visualize augmentations
+    plots.visualize_augmentations(dataset)
     
 class ImageDataset:
     def __init__(self, image_paths, transform = None):

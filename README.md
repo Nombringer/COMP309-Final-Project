@@ -86,6 +86,9 @@ The project has custom dataloaders that need to be set up before the testing pip
 
 - Run 'dataset.py'. This has been set to create the cutom dataloader needed. You should now see "test_dataset.pkl" in "data/processed"
 
+## ADD TRAINED MODEL:
+- The trained model can be downloaded from https://drive.google.com/file/d/1Z78i-P-lX3scQXMIMZsHF8KJ-MnTJVVv/view?usp=drive_link
+- Place the model (CNN_epoch_9.pth) in models/
 - You can now run 'predict.py' and 'CNN_epoch_9_metrics.txt' should appear in "reports/" THIS MAY TAKE SOME TIME (average ~20mins on my machine)
     
 # Full package list for the conda env
